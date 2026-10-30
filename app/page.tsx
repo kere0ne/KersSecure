@@ -120,7 +120,7 @@ export default function Home(){return (
 <section id="faq" className="lsec">
   <h2>Frequently asked <span className="gold">questions</span></h2>
   <div className="faq-list">
-    <div className="faq-item"><b>How do I sign in?</b><p>Use the private owner API key on the sign-in page. Access is restricted to the owner.</p></div>
+    <div className="faq-item"><b>How do I sign in?</b><p>Sign in securely with your Discord account using OAuth2. The configured owner Discord ID receives owner permissions; other accounts receive standard workspace access.</p></div>
     <div className="faq-item"><b>How do users run my script?</b><p>They run a single loadstring line pointing at your script&apos;s loader URL, optionally with their key attached. The loader checks the whitelist, binds the device and then runs the script.</p></div>
     <div className="faq-item"><b>What happens when a key runs out of devices?</b><p>The loader denies the execution and reports the reason. You can see every denial and its cause in your project logs.</p></div>
     <div className="faq-item"><b>Can I turn a key off instantly?</b><p>Yes. Suspending or revoking a license takes effect on the very next execution.</p></div>
