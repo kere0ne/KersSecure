@@ -12,8 +12,8 @@ export default function Home(){return (
     <a href="#pricing">Pricing</a>
   </div>
   <div className="lnav-auth">
-    <Link href="/login" className="lnav-signin">Owner sign in</Link>
-    <Link href="/login" className="btn gold">Owner access</Link>
+    <Link href="/login" className="lnav-signin">Sign in with Discord</Link>
+    <Link href="/login" className="btn gold">Sign in</Link>
   </div>
 </nav>
 
@@ -21,7 +21,7 @@ export default function Home(){return (
   <h1>Protect &amp; Monetize your code<br/>with <span className="gold">Kers Secure</span></h1>
   <p>The standard and go-to solution for protecting, monetizing,<br/>and managing your scripts easily.</p>
   <div className="hero-actions">
-    <Link href="/login" className="btn gold">Owner sign in</Link>
+    <Link href="/login" className="btn gold">Sign in with Discord</Link>
     <a href="#features" className="btn outline">See features</a>
   </div>
   <div className="hero-panel">
@@ -64,7 +64,7 @@ export default function Home(){return (
   <h2>Powerful <span className="gold">Features</span> You&apos;ll Love</h2>
   <p className="lsub">Everything you need to manage your scripts and users automatically.</p>
   <div className="feat-grid">
-    <article><div className="feat-icon">🤖</div><h3>Owner API Authentication</h3><p>Private owner access through a single long API key. No Discord OAuth or public account registration.</p></article>
+    <article><div className="feat-icon">🤖</div><h3>Discord Authentication</h3><p>Secure Discord OAuth2 sign-in with owner, administrator and user roles.</p></article>
     <article><div className="feat-icon">🔑</div><h3>Key Stocking</h3><p>Generate day-locked or lifetime license keys per project and hand them out on your own storefront or community.</p></article>
     <article><div className="feat-icon">📜</div><h3>Device Binding</h3><p>Every key is bound to a hardware fingerprint with configurable device limits, so shared keys stop working on their own.</p></article>
     <article><div className="feat-icon">🛑</div><h3>One Click Kill Switch</h3><p>Suspend or revoke a license anytime and it takes effect immediately for future executions.</p></article>
