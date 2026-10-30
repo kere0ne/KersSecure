@@ -1,0 +1,1 @@
+export default function Loading(){return <main className="loader-wrap"><div style={{display:'grid',justifyItems:'center'}}><div className="loader-mark"/><div className="loading-brand">KERSSECURE</div><p className="muted" style={{fontSize:12}}>Loading your workspace…</p></div></main>}
