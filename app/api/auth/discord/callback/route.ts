@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { prisma } from '@/lib/db';
+import { getPrisma as __getPrisma } from '@/lib/db';
 import { createSession } from '@/lib/auth';
 
 export const runtime = 'nodejs';
@@ -62,7 +62,7 @@ export async function GET(request: Request) {
 
     const isOwner = !!process.env.OWNER_DISCORD_ID && profile.id === process.env.OWNER_DISCORD_ID.trim();
     const avatar = profile.avatar ? 'https://cdn.discordapp.com/avatars/' + profile.id + '/' + profile.avatar + '.png?size=128' : null;
-    const user = await prisma.user.upsert({
+    const user = await (await __getPrisma()).user.upsert({
       where: { discordId: profile.id },
       create: { discordId: profile.id, discordName: profile.global_name || profile.username, avatar, email: profile.email || null, ...(isOwner ? { role: 'OWNER' } : {}) },
       update: { discordName: profile.global_name || profile.username, avatar, email: profile.email || null, ...(isOwner ? { role: 'OWNER' } : {}) },

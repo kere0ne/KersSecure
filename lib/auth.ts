@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import { jwtVerify, SignJWT } from 'jose';
-import { prisma } from '@/lib/db';
+import { getPrisma as __getPrisma } from '@/lib/db';
 
 const COOKIE_NAME = 'kerssecure_session';
 const SESSION_SECONDS = 60 * 60 * 24 * 7;
@@ -31,7 +31,7 @@ export async function getSessionUser() {
   try {
     const { payload } = await jwtVerify(token, secretKey(), { algorithms: ['HS256'] });
     if (payload.purpose !== 'kerssecure-session' || typeof payload.sub !== 'string') return null;
-    const user = await prisma.user.findUnique({ where: { id: payload.sub } });
+    const user = await (await __getPrisma()).user.findUnique({ where: { id: payload.sub } });
     if (!user || user.suspended) return null;
     return user;
   } catch {

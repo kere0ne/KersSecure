@@ -1,30 +1,11 @@
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
-}
-
-enum Role {
-  OWNER
-  ADMIN
-  DEVELOPER
-  CUSTOMER
-}
-
-enum LicenseStatus {
-  ACTIVE
-  SUSPENDED
-  REVOKED
-  EXPIRED
-}
-
-enum ScriptStatus {
-  DRAFT
-  PUBLISHED
-  ARCHIVED
 }
 
 model User {
@@ -33,7 +14,7 @@ model User {
   discordName String
   avatar      String?
   email       String?
-  role        Role            @default(CUSTOMER)
+  role        String          @default("CUSTOMER")
   suspended   Boolean         @default(false)
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
@@ -61,7 +42,7 @@ model ProjectMember {
   id        String  @id @default(cuid())
   projectId String
   userId    String
-  role      Role    @default(DEVELOPER)
+  role      String  @default("DEVELOPER")
   project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -74,7 +55,7 @@ model Script {
   name       String
   filename   String?
   storageKey String?
-  status     ScriptStatus    @default(DRAFT)
+  status     String          @default("DRAFT")
   version    Int             @default(1)
   projectId  String
   project    Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
@@ -103,8 +84,8 @@ model License {
   robloxUserId String?
   deviceHash  String?
   maxDevices  Int           @default(1)
-  devices     String[]      @default([])
-  status      LicenseStatus @default(ACTIVE)
+  devices     String        @default("[]")
+  status      String        @default("ACTIVE")
   expiresAt   DateTime?
   projectId   String
   project     Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
@@ -151,12 +132,12 @@ model AuditLog {
   actor     User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
   action    String
   target    String?
-  metadata  Json?
+  metadata  String?
   createdAt DateTime @default(now())
 }
 
 model PlatformSetting {
   key       String   @id
-  value     Json
+  value     String
   updatedAt DateTime @updatedAt
 }
