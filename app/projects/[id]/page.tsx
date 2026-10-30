@@ -1,16 +1,16 @@
-import Link from 'next/link';
-import { notFound, redirect } from 'next/navigation';
-import { getSessionUser } from '@/lib/auth';
-import { getPrisma as __getPrisma } from '@/lib/db';
-import ScriptUpload from './script-upload';
-import LicenseManager from './license-manager';
-import ScriptObfuscator from './script-obfuscator';
-
-export const dynamic = 'force-dynamic';
-export default async function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
- const user=await getSessionUser(); if(!user)redirect('/login');
- const {id}=await params;
- const project=await (await __getPrisma()).project.findFirst({where:{id,ownerId:user.id},include:{scripts:{orderBy:{updatedAt:'desc'}}}});
+import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
+import { getSessionUser } from "@/lib/auth";
+import { getPrisma } from "@/lib/db";
+import ScriptUpload from "./script-upload";
+import LicenseManager from "./license-manager";
+import ScriptObfuscator from "./script-obfuscator";
+import WorkspaceShell from "@/components/workspace-shell";
+import { ArrowLeft, FileCode2, KeyRound } from "lucide-react";
+export const dynamic = "force-dynamic";
+export default async function ProjectDetailPage({params}:{params:Promise<{id:string}>}){
+ const user=await getSessionUser();if(!user)redirect("/login");const {id}=await params;
+ const project=await (await getPrisma()).project.findFirst({where:{id,ownerId:user.id},include:{scripts:{orderBy:{updatedAt:"desc"}}}});
  if(!project)notFound();
- return <div className="shell"><aside className="side"><Link href="/" className="brand">KERS<span>SECURE</span></Link><nav className="nav"><Link href="/dashboard">Overview</Link><Link href="/projects">Projects</Link><Link href="/docs">Documentation</Link><Link href="/whitelist">Whitelist</Link><Link href="/analytics">Analytics</Link><Link href="/settings">Settings</Link></nav></aside><main className="main"><header className="top"><strong>{project.name}</strong><Link href="/projects" className="btn">← Projects</Link></header><section className="content"><div className="eyebrow">PROJECT</div><h1 className="h1">{project.name}</h1><p className="muted">{project.description||'No project description.'}</p><ScriptUpload projectId={project.id}/><h2 style={{fontSize:18,marginTop:32}}>Hosted scripts</h2><div style={{display:'grid',gap:10,marginTop:14}}>{project.scripts.length?project.scripts.map(script=><div key={script.id}><div className="card row"><div><strong>{script.name}</strong><div className="muted" style={{fontSize:12,marginTop:5}}>Version {script.version} · {script.status} · publicId {script.publicId}</div></div><span className="muted" style={{fontSize:12}}>{script.filename||'script'}</span></div><ScriptObfuscator scriptId={script.id} scriptName={script.filename||script.name}/></div>):<div className="card muted">No scripts uploaded yet.</div>}</div><LicenseManager projectId={project.id}/></section></main></div>;
+ return <WorkspaceShell title={project.name}><div className="ks-welcome"><div><div className="ks-overline">SCRIPTS / PROJECT</div><h1>{project.name}</h1><p>{project.description||"Manage source files, releases and access keys for this project."}</p></div><Link href="/projects" className="ks-secondary-btn"><ArrowLeft size={14}/> All projects</Link></div><ScriptUpload projectId={project.id}/><section className="ks-panel ks-script-list"><div className="ks-panel-heading"><div><h2>Hosted scripts</h2><p>{project.scripts.length} script{project.scripts.length===1?"":"s"} in this project</p></div><FileCode2 size={16}/></div>{project.scripts.length?project.scripts.map(script=><article className="ks-script-entry" key={script.id}><Link href={"/scripts/"+script.id} className="ks-script-entry-main"><span className="ks-project-symbol"><FileCode2 size={17}/></span><span><strong>{script.name}</strong><small>{script.filename||"source file"} · v{script.version} · {script.status}</small></span></Link><span className="ks-script-public-id">ID {script.publicId.slice(0,10)}</span><Link href={"/scripts/"+script.id} className="ks-secondary-btn">Configure</Link><ScriptObfuscator scriptId={script.id} scriptName={script.filename||script.name}/></article>):<div className="ks-empty"><div className="ks-empty-icon"><FileCode2 size={20}/></div><strong>No scripts uploaded</strong><p>Upload a Lua or Luau file to add it to this project.</p></div>}</section><section className="ks-panel ks-project-licenses"><div className="ks-panel-heading"><div><h2>License keys</h2><p>Keys associated with this project</p></div><KeyRound size={16}/></div><LicenseManager projectId={project.id}/></section></WorkspaceShell>;
 }
