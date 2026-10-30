@@ -1,0 +1,16 @@
+generator client { provider = "prisma-client-js" }
+datasource db { provider = "postgresql" url = env("DATABASE_URL") }
+enum Role { OWNER ADMIN DEVELOPER CUSTOMER }
+enum LicenseStatus { ACTIVE SUSPENDED REVOKED EXPIRED }
+enum ScriptStatus { DRAFT PUBLISHED ARCHIVED }
+model User { id String @id @default(cuid()) discordId String @unique discordName String avatar String? email String? role Role @default(CUSTOMER) suspended Boolean @default(false) createdAt DateTime @default(now()) updatedAt DateTime @updatedAt projects Project[] memberships ProjectMember[] licenses License[] authLogs AuthLog[] auditLogs AuditLog[] }
+model Project { id String @id @default(cuid()) name String description String? ownerId String owner User @relation(fields:[ownerId],references:[id],onDelete:Cascade) scripts Script[] members ProjectMember[] licenses License[] createdAt DateTime @default(now()) updatedAt DateTime @updatedAt }
+model ProjectMember { id String @id @default(cuid()) projectId String userId String role Role @default(DEVELOPER) project Project @relation(fields:[projectId],references:[id],onDelete:Cascade) user User @relation(fields:[userId],references:[id],onDelete:Cascade) @@unique([projectId,userId]) }
+model Script { id String @id @default(cuid()) publicId String @unique @default(cuid()) name String filename String? storageKey String? status ScriptStatus @default(DRAFT) version Int @default(1) projectId String project Project @relation(fields:[projectId],references:[id],onDelete:Cascade) versions ScriptVersion[] executions ExecutionLog[] createdAt DateTime @default(now()) updatedAt DateTime @updatedAt }
+model ScriptVersion { id String @id @default(cuid()) scriptId String storageKey String version Int checksum String createdAt DateTime @default(now()) script Script @relation(fields:[scriptId],references:[id],onDelete:Cascade) @@unique([scriptId,version]) }
+model License { id String @id @default(cuid()) keyHash String @unique keyPrefix String robloxUserId String? deviceHash String? maxDevices Int @default(1) devices String[] @default([]) status LicenseStatus @default(ACTIVE) expiresAt DateTime? projectId String project Project @relation(fields:[projectId],references:[id],onDelete:Cascade) userId String? user User? @relation(fields:[userId],references:[id],onDelete:SetNull) createdAt DateTime @default(now()) updatedAt DateTime @updatedAt }
+model AuthLog { id String @id @default(cuid()) scriptId String? licenseId String? ipHash String? outcome String detail String? createdAt DateTime @default(now()) userId String? user User? @relation(fields:[userId],references:[id],onDelete:SetNull) }
+model ExecutionLog { id String @id @default(cuid()) scriptId String script Script @relation(fields:[scriptId],references:[id],onDelete:Cascade) licenseId String? outcome String ipHash String? createdAt DateTime @default(now()) }
+model Subscription { id String @id @default(cuid()) userId String @unique plan String status String currentPeriodEnd DateTime? createdAt DateTime @default(now()) }
+model AuditLog { id String @id @default(cuid()) actorId String? actor User? @relation(fields:[actorId],references:[id],onDelete:SetNull) action String target String? metadata Json? createdAt DateTime @default(now()) }
+model PlatformSetting { key String @id value Json updatedAt DateTime @updatedAt }
