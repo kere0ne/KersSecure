@@ -18,7 +18,7 @@ jobs:
       - name: Validate Prisma schema
         run: npx prisma validate
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/kerssecure
+          DATABASE_URL: file:./dev.db
       - name: Generate Prisma client
         run: npx prisma generate
       - name: TypeScript check
@@ -26,6 +26,6 @@ jobs:
       - name: Production build
         run: npm run build
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/kerssecure
+          DATABASE_URL: file:./dev.db
           SESSION_SECRET: ci-only-session-secret-at-least-32-characters-long
           LICENSE_HASH_SECRET: ci-only-license-hash-secret-at-least-32-characters
