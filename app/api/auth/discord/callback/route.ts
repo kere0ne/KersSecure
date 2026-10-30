@@ -5,7 +5,6 @@ import { createSession } from '@/lib/auth';
 
 export const runtime = 'nodejs';
 const STATE_COOKIE = 'kerssecure_oauth_state';
-const SESSION_COOKIE = 'kerssecure_session';
 type DiscordUser = { id: string; username: string; global_name?: string | null; avatar?: string | null; email?: string | null };
 
 function getRedirectUri(origin: string) {
@@ -70,12 +69,10 @@ export async function GET(request: Request) {
     });
     if (user.suspended) return fail('This account has been suspended.', 403);
 
-    await createSession(user.id);
+    const sessionToken = await createSession(user.id);
     const response = NextResponse.redirect(new URL('/dashboard', url.origin));
     response.cookies.set(STATE_COOKIE, '', { httpOnly: true, secure, sameSite: 'lax', path: '/', maxAge: 0 });
-    // Re-issue the session on this response to ensure Cloudflare forwards Set-Cookie.
-    const sessionCookie = (await cookies()).get(SESSION_COOKIE)?.value;
-    if (sessionCookie) response.cookies.set(SESSION_COOKIE, sessionCookie, { httpOnly: true, secure, sameSite: 'lax', path: '/', maxAge: 60 * 60 * 24 * 7 });
+    response.cookies.set('kerssecure_session', sessionToken, { httpOnly: true, secure, sameSite: 'lax', path: '/', maxAge: 60 * 60 * 24 * 7 });
     return response;
   } catch (error) {
     console.error('Discord OAuth callback failed:', error);
