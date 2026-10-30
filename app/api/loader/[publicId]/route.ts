@@ -117,28 +117,27 @@ export async function POST(request:Request,context:{params:Promise<{publicId:str
      const fingerprint=deviceHash(parsed.data.deviceId); const devices=JSON.parse(license.devices||'[]') as string[];
      if(devices.includes(fingerprint)||devices.length<license.maxDevices){
       if(license.execLimit!=null&&license.usedCount>=license.execLimit)reason='exec_limit_reached';
-      else{
-       if(!devices.includes(fingerprint))await prisma.license.update({where:{id:license.id},data:{devices:JSON.stringify([...devices,fingerprint]),deviceHash:fingerprint}});
-       authOk=true;
-      }
+      else authOk=true;
      }else reason='device_limit';
     }
    }
-  }else if(license?.status!=='ACTIVE')reason='license_inactive';else if(license?.expiresAt&&license.expiresAt<=new Date())reason='license_expired';
+  }else if(license&&license.status!=='ACTIVE')reason='license_inactive';else if(license?.expiresAt&&license.expiresAt<=new Date())reason='license_expired';
   if(authOk&&script){
    let source: string|null=null;
-   if(script.storageKey){
+   const hasS3=!!(process.env.S3_ENDPOINT&&process.env.S3_BUCKET&&process.env.S3_ACCESS_KEY_ID&&process.env.S3_SECRET_ACCESS_KEY);
+   if(script.storageKey&&hasS3){
     try{
      const result=await storage().send(new GetObjectCommand({Bucket:process.env.S3_BUCKET,Key:script.storageKey}));
-     const body=await result.Body?.transformToString(); if(typeof body==='string')source=body; else reason='script_unavailable';
-    }catch(err){console.error('S3 read failed:',err);source=null;reason='script_unavailable';}
+     const body=await result.Body?.transformToString(); if(typeof body==='string')source=body; else source=script.code??null;
+    }catch(err){console.error('S3 read failed:',err);source=script.code??null;}
    }else if(script.code){source=script.code;}
-   else reason='script_unavailable';
    if(source!==null){
+    const fingerprint=deviceHash(parsed.data.deviceId);
+    const devices=JSON.parse(license!.devices||'[]') as string[];
     await prisma.$transaction([
      prisma.authLog.create({data:{scriptId:script.id,licenseId:license!.id,ipHash,outcome:'authorized'}}),
      prisma.executionLog.create({data:{scriptId:script.id,licenseId:license!.id,ipHash,outcome:'authorized'}}),
-     prisma.license.update({where:{id:license!.id},data:{usedCount:{increment:1}}}),
+     prisma.license.update({where:{id:license!.id},data:{usedCount:{increment:1},...(devices.includes(fingerprint)?{}:{devices:JSON.stringify([...devices,fingerprint])}),deviceHash:fingerprint}}),
     ]);
     return new NextResponse(source,{status:200,headers:{'Content-Type':'text/plain; charset=utf-8','Cache-Control':'no-store, no-cache, must-revalidate','X-Content-Type-Options':'nosniff'}});
    }

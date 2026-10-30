@@ -24,12 +24,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const bytes = Buffer.from(await file.arrayBuffer()); const checksum = createHash('sha256').update(bytes).digest('hex');
   const hasS3 = !!(process.env.S3_ENDPOINT && process.env.S3_BUCKET && process.env.S3_ACCESS_KEY_ID && process.env.S3_SECRET_ACCESS_KEY);
   const storageKey = 'projects/' + project.id + '/scripts/' + randomUUID() + '/' + filename;
+  const scriptKey = hasS3 ? storageKey : null;
+  const versionKey = hasS3 ? storageKey : 'local/' + project.id + '/' + filename;
   try {
     if (hasS3) {
       const client = storageClient();
       await client.send(new PutObjectCommand({ Bucket: process.env.S3_BUCKET, Key: storageKey!, Body: bytes, ContentType: 'text/plain; charset=utf-8', ServerSideEncryption: 'AES256', Metadata: { checksum } }));
     }
-    const script = await (await __getPrisma()).script.create({ data: { name: filename.replace(/\.(lua|luau|txt)$/i, ''), filename, storageKey, code: bytes.toString('utf8'), projectId: project.id, status: 'PUBLISHED', versions: { create: { storageKey, version: 1, checksum } } } });
+    const script = await (await __getPrisma()).script.create({ data: { name: filename.replace(/\.(lua|luau|txt)$/i, ''), filename, storageKey: scriptKey, code: bytes.toString('utf8'), projectId: project.id, status: 'PUBLISHED', versions: { create: { storageKey: versionKey, version: 1, checksum } } } });
     await (await __getPrisma()).auditLog.create({ data: { actorId: user.id, action: 'script.uploaded', target: script.id } });
     return NextResponse.json({ script: { id: script.id, name: script.name, version: script.version } }, { status: 201 });
   } catch (error) {
