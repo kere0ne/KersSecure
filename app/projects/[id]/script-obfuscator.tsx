@@ -31,12 +31,12 @@ export default function ScriptObfuscator({ scriptId, scriptName }: { scriptId: s
   const presets = [
     { id: 'light', label: 'Light', desc: 'Rename + minify only' },
     { id: 'balanced', label: 'Balanced', desc: '+ strings, constants, junk' },
-    { id: 'maximum', label: 'Maximum', desc: '+ arithmetic VM' },
+    { id: 'maximum', label: 'Experimental', desc: 'Arithmetic transforms' },
   ];
   return (
     <div className="card" style={{ marginTop: 14 }}>
-      <strong>Obfuscate</strong>
-      <p className="muted" style={{ fontSize: 12, margin: '5px 0 10px' }}>Runs the Kers Secure engine on this script. Every build is verified by a parser round-trip before it is saved.</p>
+      <strong>Experimental build</strong>
+      <p className="muted" style={{ fontSize: 12, margin: '5px 0 10px' }}>Experimental Lua source transformations with parser round-trip validation. This is not the production C# VM engine or full Luau protection; test output carefully before use.</p>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
         {presets.map(p => (
           <button key={p.id} onClick={() => setPreset(p.id)} className={'btn' + (preset === p.id ? ' primary' : '')} style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
