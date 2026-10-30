@@ -1,35 +1,10 @@
 "use client";
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-
-export default function SettingsPage() {
-  const [me, setMe] = useState<{ user?: { discordName: string; role: string; discordId: string; email: string | null }; subscription?: { plan: string; status: string } } | null>(null);
-  useEffect(() => { fetch('/api/me').then(r => r.json()).then(setMe); }, []);
-  return (
-    <div className="shell"><aside className="side">
-      <Link href="/" className="brand">KERS<span>SECURE</span></Link>
-      <nav className="nav"><Link href="/dashboard">Overview</Link><Link href="/projects">Projects</Link><Link href="/whitelist">Whitelist</Link><Link href="/analytics">Analytics</Link><Link href="/docs">Documentation</Link><Link href="/settings">Settings</Link></nav>
-    </aside><main className="main"><header className="top"><strong>Account settings</strong></header><section className="content">
-      {me?.user && (
-        <>
-          <div className="card"><strong>Profile</strong>
-            <div style={{ display: 'grid', gap: 8, marginTop: 10, fontSize: 13 }}>
-              <div>Discord: <strong>{me.user.discordName}</strong></div>
-              <div>Role: <span className="muted">{me.user.role}</span></div>
-              <div>Discord ID: <span className="muted" style={{ fontFamily: 'ui-monospace, monospace' }}>{me.user.discordId}</span></div>
-              {me.user.email && <div>Email: <span className="muted">{me.user.email}</span></div>}
-            </div>
-          </div>
-          <div className="card" style={{ marginTop: 14 }}><strong>Subscription</strong>
-            <p className="muted" style={{ fontSize: 13, margin: '8px 0' }}>Current plan: <strong>{me.subscription?.plan || 'FREE'}</strong>{me.subscription?.status ? ' · ' + me.subscription.status : ''}</p>
-            <Link href="/pricing" className="btn">View plans</Link>
-          </div>
-          <div className="card" style={{ marginTop: 14 }}><strong>Session</strong>
-            <p className="muted" style={{ fontSize: 13, margin: '8px 0' }}>Signed in with Discord OAuth2. Sessions are HttpOnly, signed JWTs.</p>
-            <a className="btn" href="/api/auth/logout">Log out</a>
-          </div>
-        </>
-      )}
-    </section></main></div>
-  );
+import { useEffect, useState } from "react";
+import WorkspaceShell from "@/components/workspace-shell";
+import { UserRound, ShieldCheck, CreditCard, LogOut } from "lucide-react";
+type Me={user?:{discordName:string;role:string;discordId:string;email:string|null};subscription?:{plan:string;status:string}};
+export default function SettingsPage(){
+ const [me,setMe]=useState<Me|null>(null);const [error,setError]=useState("");
+ useEffect(()=>{fetch("/api/me").then(r=>r.json()).then(setMe).catch(()=>setError("Could not load account settings."));},[]);
+ return <WorkspaceShell title="Settings"><div className="ks-welcome"><div><div className="ks-overline">WORKSPACE / PREFERENCES</div><h1>Settings</h1><p>Manage your account, security and subscription.</p></div></div>{error&&<div className="ks-panel">{error}</div>}<div className="ks-settings-grid"><section className="ks-panel"><div className="ks-settings-heading"><UserRound size={17}/><div><h2>Account profile</h2><p>Your connected Discord identity</p></div></div>{me?.user?<div className="ks-settings-list"><div><span>Discord username</span><strong>{me.user.discordName}</strong></div><div><span>Account role</span><strong>{me.user.role}</strong></div><div><span>Discord user ID</span><strong className="ks-mono">{me.user.discordId}</strong></div>{me.user.email&&<div><span>Email</span><strong>{me.user.email}</strong></div>}</div>:<p className="ks-muted">Loading account…</p>}</section><section className="ks-panel"><div className="ks-settings-heading"><CreditCard size={17}/><div><h2>Subscription</h2><p>Current workspace plan</p></div></div><div className="ks-plan-card"><span>Current plan</span><strong>{me?.subscription?.plan||"FREE"}</strong><small>{me?.subscription?.status||"Active"}</small><a href="/pricing" className="ks-secondary-btn">View plans</a></div></section><section className="ks-panel"><div className="ks-settings-heading"><ShieldCheck size={17}/><div><h2>Security & sessions</h2><p>Authentication and account access</p></div></div><p className="ks-settings-copy">You are signed in with Discord OAuth2. Your session is stored in a signed, HTTP-only cookie.</p><form action="/api/auth/logout" method="post"><button className="ks-secondary-btn"><LogOut size={14}/> Sign out</button></form></section></div></WorkspaceShell>;
 }
