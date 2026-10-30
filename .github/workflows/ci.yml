@@ -1,0 +1,32 @@
+name: KersSecure checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm install
+      - name: Validate Prisma schema
+        run: npx prisma validate
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/kerssecure
+      - name: Generate Prisma client
+        run: npx prisma generate
+      - name: TypeScript check
+        run: npm run typecheck
+      - name: Production build
+        run: npm run build
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/kerssecure
+          SESSION_SECRET: ci-only-session-secret-at-least-32-characters-long
+          LICENSE_HASH_SECRET: ci-only-license-hash-secret-at-least-32-characters
