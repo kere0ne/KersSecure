@@ -29,7 +29,9 @@ export default function WorkspaceShell({ children, userName = "Workspace", role 
 }) {
   const path = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [light, setLight] = useState(false);\n  const [profileName, setProfileName] = useState(userName);\n  const [profileRole, setProfileRole] = useState(role);
+  const [light, setLight] = useState(false);
+  const [profileName, setProfileName] = useState(userName);
+  const [profileRole, setProfileRole] = useState(role);
   useEffect(() => { setLight(localStorage.getItem("ks-theme") === "light"); if (userName === "Workspace") fetch("/api/me").then(r => r.json()).then(d => { if (d.user?.discordName) setProfileName(d.user.discordName); if (d.user?.role) setProfileRole(d.user.role); }).catch(() => {}); }, [userName]);
   useEffect(() => { document.documentElement.dataset.theme = light ? "light" : "dark"; localStorage.setItem("ks-theme", light ? "light" : "dark"); }, [light]);
   const nav = (items: typeof primary) => items.map(item => {
