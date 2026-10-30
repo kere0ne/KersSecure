@@ -29,4 +29,7 @@ Copy .env.example to .env. Set DATABASE_URL, SESSION_SECRET, DISCORD_CLIENT_ID, 
 ## Security notes
 
 Never commit secrets. Keep Discord bot tokens, internal service tokens, database credentials and storage credentials server-side. The current internal API token is a service-to-service credential, not a user login key. Configure rate limiting, audit retention, backups and TLS before public production use.
-\n## Workspace feature boundaries\n\nThe Logs and Analytics pages read recorded authorization events. Live Roblox presence, executor telemetry, key-reward providers, full guild configuration, team invitations, and script-specific protection/message/style configuration are not yet implemented as end-to-end features. The current browser editor is a source editor with version history; it is not syntax highlighting or a production obfuscator.\n
+
+## Workspace feature boundaries
+
+The Logs and Analytics pages read recorded authorization events. Live Roblox presence, executor telemetry, key-reward providers, full guild configuration, team invitations, and script-specific protection/message/style configuration are not yet implemented as end-to-end features. The current browser editor is a source editor with version history; it is not syntax highlighting or a production obfuscator.
