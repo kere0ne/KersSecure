@@ -3297,7 +3297,7 @@
       "format": "cjs"
     },
     ".open-next/server-functions/default/node_modules/next/dist/server/load-manifest.external.js": {
-      "bytes": 49140,
+      "bytes": 49123,
       "imports": [
         {
           "path": "path",
@@ -3781,6 +3781,59 @@
       ],
       "format": "cjs"
     },
+    ".open-next/server-functions/default/node_modules/@prisma/client/runtime/wasm-engine-edge.js": {
+      "bytes": 147270,
+      "imports": [],
+      "format": "cjs"
+    },
+    ".open-next/server-functions/default/node_modules/.prisma/client/query_engine_bg.js": {
+      "bytes": 16688,
+      "imports": [],
+      "format": "cjs"
+    },
+    ".open-next/server-functions/default/node_modules/.prisma/client/wasm-worker-loader.mjs": {
+      "bytes": 177,
+      "imports": [
+        {
+          "path": "/tmp/kersrepo/.open-next/server-functions/default/node_modules/.prisma/client/query_engine_bg.wasm",
+          "kind": "dynamic-import",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    ".open-next/server-functions/default/node_modules/.prisma/client/wasm.js": {
+      "bytes": 18571,
+      "imports": [
+        {
+          "path": ".open-next/server-functions/default/node_modules/@prisma/client/runtime/wasm-engine-edge.js",
+          "kind": "require-call",
+          "original": "@prisma/client/runtime/wasm-engine-edge.js"
+        },
+        {
+          "path": ".open-next/server-functions/default/node_modules/.prisma/client/query_engine_bg.js",
+          "kind": "require-call",
+          "original": "./query_engine_bg.js"
+        },
+        {
+          "path": ".open-next/server-functions/default/node_modules/.prisma/client/wasm-worker-loader.mjs",
+          "kind": "dynamic-import",
+          "original": "#wasm-engine-loader"
+        }
+      ],
+      "format": "cjs"
+    },
+    ".open-next/server-functions/default/node_modules/@prisma/client/wasm.js": {
+      "bytes": 107,
+      "imports": [
+        {
+          "path": ".open-next/server-functions/default/node_modules/.prisma/client/wasm.js",
+          "kind": "require-call",
+          "original": ".prisma/client/wasm"
+        }
+      ],
+      "format": "cjs"
+    },
     ".open-next/server-functions/default/node_modules/next/dist/server/app-render/dynamic-access-async-storage-instance.js": {
       "bytes": 475,
       "imports": [
@@ -3924,33 +3977,6 @@
       ],
       "format": "cjs"
     },
-    ".open-next/server-functions/default/node_modules/@prisma/client/runtime/edge.js": {
-      "bytes": 170641,
-      "imports": [],
-      "format": "cjs"
-    },
-    ".open-next/server-functions/default/node_modules/.prisma/client/edge.js": {
-      "bytes": 39739,
-      "imports": [
-        {
-          "path": ".open-next/server-functions/default/node_modules/@prisma/client/runtime/edge.js",
-          "kind": "require-call",
-          "original": "@prisma/client/runtime/edge.js"
-        }
-      ],
-      "format": "cjs"
-    },
-    ".open-next/server-functions/default/node_modules/@prisma/client/edge.js": {
-      "bytes": 107,
-      "imports": [
-        {
-          "path": ".open-next/server-functions/default/node_modules/.prisma/client/edge.js",
-          "kind": "require-call",
-          "original": ".prisma/client/edge"
-        }
-      ],
-      "format": "cjs"
-    },
     ".open-next/server-functions/default/.next/server/chunks/233.js": {
       "bytes": 26908,
       "imports": [],
@@ -4072,6 +4098,11 @@
           "original": "next/dist/compiled/next-server/app-page.runtime.prod.js"
         },
         {
+          "path": ".open-next/server-functions/default/node_modules/@prisma/client/wasm.js",
+          "kind": "require-call",
+          "original": "@prisma/client/wasm"
+        },
+        {
           "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/action-async-storage.external.js",
           "kind": "require-call",
           "original": "next/dist/server/app-render/action-async-storage.external.js"
@@ -4095,11 +4126,6 @@
           "path": "crypto",
           "kind": "require-call",
           "external": true
-        },
-        {
-          "path": ".open-next/server-functions/default/node_modules/@prisma/client/edge.js",
-          "kind": "require-call",
-          "original": "@prisma/client/edge"
         },
         {
           "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/work-unit-async-storage.external.js",
@@ -4138,6 +4164,11 @@
           "original": "next/dist/compiled/next-server/app-page.runtime.prod.js"
         },
         {
+          "path": ".open-next/server-functions/default/node_modules/@prisma/client/wasm.js",
+          "kind": "require-call",
+          "original": "@prisma/client/wasm"
+        },
+        {
           "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/action-async-storage.external.js",
           "kind": "require-call",
           "original": "next/dist/server/app-render/action-async-storage.external.js"
@@ -4161,11 +4192,6 @@
           "path": "crypto",
           "kind": "require-call",
           "external": true
-        },
-        {
-          "path": ".open-next/server-functions/default/node_modules/@prisma/client/edge.js",
-          "kind": "require-call",
-          "original": "@prisma/client/edge"
         },
         {
           "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/work-unit-async-storage.external.js",
@@ -4209,6 +4235,11 @@
           "original": "next/dist/compiled/next-server/app-page.runtime.prod.js"
         },
         {
+          "path": ".open-next/server-functions/default/node_modules/@prisma/client/wasm.js",
+          "kind": "require-call",
+          "original": "@prisma/client/wasm"
+        },
+        {
           "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/action-async-storage.external.js",
           "kind": "require-call",
           "original": "next/dist/server/app-render/action-async-storage.external.js"
@@ -4232,11 +4263,6 @@
           "path": "crypto",
           "kind": "require-call",
           "external": true
-        },
-        {
-          "path": ".open-next/server-functions/default/node_modules/@prisma/client/edge.js",
-          "kind": "require-call",
-          "original": "@prisma/client/edge"
         },
         {
           "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/work-unit-async-storage.external.js",
@@ -5735,6 +5761,11 @@
           "original": "next/dist/compiled/next-server/app-page.runtime.prod.js"
         },
         {
+          "path": ".open-next/server-functions/default/node_modules/@prisma/client/wasm.js",
+          "kind": "require-call",
+          "original": "@prisma/client/wasm"
+        },
+        {
           "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/action-async-storage.external.js",
           "kind": "require-call",
           "original": "next/dist/server/app-render/action-async-storage.external.js"
@@ -5758,11 +5789,6 @@
           "path": "crypto",
           "kind": "require-call",
           "external": true
-        },
-        {
-          "path": ".open-next/server-functions/default/node_modules/@prisma/client/edge.js",
-          "kind": "require-call",
-          "original": "@prisma/client/edge"
         },
         {
           "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/work-unit-async-storage.external.js",
@@ -5811,6 +5837,11 @@
           "original": "next/dist/compiled/next-server/app-page.runtime.prod.js"
         },
         {
+          "path": ".open-next/server-functions/default/node_modules/@prisma/client/wasm.js",
+          "kind": "require-call",
+          "original": "@prisma/client/wasm"
+        },
+        {
           "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/action-async-storage.external.js",
           "kind": "require-call",
           "original": "next/dist/server/app-render/action-async-storage.external.js"
@@ -5834,11 +5865,6 @@
           "path": "crypto",
           "kind": "require-call",
           "external": true
-        },
-        {
-          "path": ".open-next/server-functions/default/node_modules/@prisma/client/edge.js",
-          "kind": "require-call",
-          "original": "@prisma/client/edge"
         },
         {
           "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/work-unit-async-storage.external.js",
@@ -5953,6 +5979,11 @@
           "original": "next/dist/compiled/next-server/app-page.runtime.prod.js"
         },
         {
+          "path": ".open-next/server-functions/default/node_modules/@prisma/client/wasm.js",
+          "kind": "require-call",
+          "original": "@prisma/client/wasm"
+        },
+        {
           "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/action-async-storage.external.js",
           "kind": "require-call",
           "original": "next/dist/server/app-render/action-async-storage.external.js"
@@ -5976,11 +6007,6 @@
           "path": "crypto",
           "kind": "require-call",
           "external": true
-        },
-        {
-          "path": ".open-next/server-functions/default/node_modules/@prisma/client/edge.js",
-          "kind": "require-call",
-          "original": "@prisma/client/edge"
         },
         {
           "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/work-unit-async-storage.external.js",
@@ -6019,6 +6045,11 @@
           "original": "next/dist/compiled/next-server/app-page.runtime.prod.js"
         },
         {
+          "path": ".open-next/server-functions/default/node_modules/@prisma/client/wasm.js",
+          "kind": "require-call",
+          "original": "@prisma/client/wasm"
+        },
+        {
           "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/action-async-storage.external.js",
           "kind": "require-call",
           "original": "next/dist/server/app-render/action-async-storage.external.js"
@@ -6042,11 +6073,6 @@
           "path": "crypto",
           "kind": "require-call",
           "external": true
-        },
-        {
-          "path": ".open-next/server-functions/default/node_modules/@prisma/client/edge.js",
-          "kind": "require-call",
-          "original": "@prisma/client/edge"
         },
         {
           "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/work-unit-async-storage.external.js",
@@ -6085,6 +6111,11 @@
           "original": "next/dist/compiled/next-server/app-page.runtime.prod.js"
         },
         {
+          "path": ".open-next/server-functions/default/node_modules/@prisma/client/wasm.js",
+          "kind": "require-call",
+          "original": "@prisma/client/wasm"
+        },
+        {
           "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/action-async-storage.external.js",
           "kind": "require-call",
           "original": "next/dist/server/app-render/action-async-storage.external.js"
@@ -6118,11 +6149,6 @@
           "path": "crypto",
           "kind": "require-call",
           "external": true
-        },
-        {
-          "path": ".open-next/server-functions/default/node_modules/@prisma/client/edge.js",
-          "kind": "require-call",
-          "original": "@prisma/client/edge"
         },
         {
           "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/work-unit-async-storage.external.js",
@@ -6232,6 +6258,11 @@
           "original": "next/dist/compiled/next-server/app-page.runtime.prod.js"
         },
         {
+          "path": ".open-next/server-functions/default/node_modules/@prisma/client/wasm.js",
+          "kind": "require-call",
+          "original": "@prisma/client/wasm"
+        },
+        {
           "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/action-async-storage.external.js",
           "kind": "require-call",
           "original": "next/dist/server/app-render/action-async-storage.external.js"
@@ -6265,11 +6296,6 @@
           "path": "crypto",
           "kind": "require-call",
           "external": true
-        },
-        {
-          "path": ".open-next/server-functions/default/node_modules/@prisma/client/edge.js",
-          "kind": "require-call",
-          "original": "@prisma/client/edge"
         },
         {
           "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/work-unit-async-storage.external.js",
@@ -6379,6 +6405,11 @@
           "original": "next/dist/compiled/next-server/app-page.runtime.prod.js"
         },
         {
+          "path": ".open-next/server-functions/default/node_modules/@prisma/client/wasm.js",
+          "kind": "require-call",
+          "original": "@prisma/client/wasm"
+        },
+        {
           "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/action-async-storage.external.js",
           "kind": "require-call",
           "original": "next/dist/server/app-render/action-async-storage.external.js"
@@ -6402,11 +6433,6 @@
           "path": "crypto",
           "kind": "require-call",
           "external": true
-        },
-        {
-          "path": ".open-next/server-functions/default/node_modules/@prisma/client/edge.js",
-          "kind": "require-call",
-          "original": "@prisma/client/edge"
         },
         {
           "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/work-unit-async-storage.external.js",
@@ -7996,7 +8022,7 @@
       "format": "esm"
     },
     ".open-next/server-functions/default/index.mjs": {
-      "bytes": 92924,
+      "bytes": 92907,
       "imports": [
         {
           "path": "node:module",
@@ -8238,6 +8264,11 @@
         {
           "path": "util",
           "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "/tmp/kersrepo/.open-next/server-functions/default/node_modules/.prisma/client/query_engine_bg.wasm",
+          "kind": "dynamic-import",
           "external": true
         },
         {
@@ -9498,7 +9529,7 @@
           "bytesInOutput": 4955
         },
         ".open-next/server-functions/default/node_modules/next/dist/server/load-manifest.external.js": {
-          "bytesInOutput": 42652
+          "bytesInOutput": 42637
         },
         ".open-next/server-functions/default/node_modules/next/dist/server/app-render/action-async-storage-instance.js": {
           "bytesInOutput": 501
@@ -9525,7 +9556,7 @@
           "bytesInOutput": 319
         },
         ".open-next/server-functions/default/node_modules/next/dist/compiled/jsonwebtoken/index.js": {
-          "bytesInOutput": 125940
+          "bytesInOutput": 125971
         },
         ".open-next/server-functions/default/node_modules/next/dist/server/app-render/cache-signal.js": {
           "bytesInOutput": 2312
@@ -9557,6 +9588,21 @@
         ".open-next/server-functions/default/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js": {
           "bytesInOutput": 568195
         },
+        ".open-next/server-functions/default/node_modules/@prisma/client/runtime/wasm-engine-edge.js": {
+          "bytesInOutput": 146669
+        },
+        ".open-next/server-functions/default/node_modules/.prisma/client/query_engine_bg.js": {
+          "bytesInOutput": 13633
+        },
+        ".open-next/server-functions/default/node_modules/.prisma/client/wasm-worker-loader.mjs": {
+          "bytesInOutput": 405
+        },
+        ".open-next/server-functions/default/node_modules/.prisma/client/wasm.js": {
+          "bytesInOutput": 15957
+        },
+        ".open-next/server-functions/default/node_modules/@prisma/client/wasm.js": {
+          "bytesInOutput": 158
+        },
         ".open-next/server-functions/default/node_modules/next/dist/server/app-render/dynamic-access-async-storage-instance.js": {
           "bytesInOutput": 538
         },
@@ -9565,15 +9611,6 @@
         },
         ".open-next/server-functions/default/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js": {
           "bytesInOutput": 176842
-        },
-        ".open-next/server-functions/default/node_modules/@prisma/client/runtime/edge.js": {
-          "bytesInOutput": 170104
-        },
-        ".open-next/server-functions/default/node_modules/.prisma/client/edge.js": {
-          "bytesInOutput": 34935
-        },
-        ".open-next/server-functions/default/node_modules/@prisma/client/edge.js": {
-          "bytesInOutput": 159
         },
         ".open-next/server-functions/default/.next/server/chunks/233.js": {
           "bytesInOutput": 28190
@@ -9642,7 +9679,7 @@
           "bytesInOutput": 23384
         },
         ".open-next/server-functions/default/node_modules/@smithy/core/dist-cjs/submodules/protocols/index.js": {
-          "bytesInOutput": 60606
+          "bytesInOutput": 60609
         },
         ".open-next/server-functions/default/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js": {
           "bytesInOutput": 24114
@@ -9939,10 +9976,10 @@
           "bytesInOutput": 5072
         },
         ".open-next/server-functions/default/index.mjs": {
-          "bytesInOutput": 63461
+          "bytesInOutput": 63448
         }
       },
-      "bytes": 4223480
+      "bytes": 4195110
     }
   }
 }
