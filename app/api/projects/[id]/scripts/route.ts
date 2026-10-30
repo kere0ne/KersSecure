@@ -26,7 +26,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   try {
     const client = storageClient();
     await client.send(new PutObjectCommand({ Bucket: process.env.S3_BUCKET, Key: storageKey, Body: bytes, ContentType: 'text/plain; charset=utf-8', ServerSideEncryption: 'AES256', Metadata: { checksum } }));
-    const script = await prisma.script.create({ data: { name: filename.replace(/\.(lua|luau|txt)$/i, ''), filename, storageKey, projectId: project.id, versions: { create: { storageKey, version: 1, checksum } } } });
+    const script = await prisma.script.create({ data: { name: filename.replace(/\.(lua|luau|txt)$/i, ''), filename, storageKey, projectId: project.id, status: 'PUBLISHED', versions: { create: { storageKey, version: 1, checksum } } } });
     await prisma.auditLog.create({ data: { actorId: user.id, action: 'script.uploaded', target: script.id } });
     return NextResponse.json({ script: { id: script.id, name: script.name, version: script.version } }, { status: 201 });
   } catch (error) {
