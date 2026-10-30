@@ -1,0 +1,1 @@
+import {NextResponse} from 'next/server';export async function GET(){return NextResponse.json({status:'ok',service:'KersSecure API',configured:!!process.env.DATABASE_URL},{headers:{'Cache-Control':'no-store'}})}
