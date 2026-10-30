@@ -7,7 +7,7 @@ import LicenseManager from './license-manager';
 
 export const dynamic = 'force-dynamic';
 export default async function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
- const user=await getSessionUser(); if(!user)redirect('/api/auth/discord');
+ const user=await getSessionUser(); if(!user)redirect('/login');
  const {id}=await params;
  const project=await (await __getPrisma()).project.findFirst({where:{id,ownerId:user.id},include:{scripts:{orderBy:{updatedAt:'desc'}}}});
  if(!project)notFound();
