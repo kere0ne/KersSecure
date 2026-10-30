@@ -12,8 +12,8 @@ export default function Home(){return (
     <a href="#pricing">Pricing</a>
   </div>
   <div className="lnav-auth">
-    <Link href="/api/auth/discord" className="lnav-signin">Sign in</Link>
-    <Link href="/api/auth/discord" className="btn gold">Sign up</Link>
+    <Link href="/login" className="lnav-signin">Owner sign in</Link>
+    <Link href="/login" className="btn gold">Owner access</Link>
   </div>
 </nav>
 
@@ -21,7 +21,7 @@ export default function Home(){return (
   <h1>Protect &amp; Monetize your code<br/>with <span className="gold">Kers Secure</span></h1>
   <p>The standard and go-to solution for protecting, monetizing,<br/>and managing your scripts easily.</p>
   <div className="hero-actions">
-    <Link href="/api/auth/discord" className="btn gold">Sign in with Discord</Link>
+    <Link href="/login" className="btn gold">Owner sign in</Link>
     <a href="#features" className="btn outline">See features</a>
   </div>
   <div className="hero-panel">
@@ -64,7 +64,7 @@ export default function Home(){return (
   <h2>Powerful <span className="gold">Features</span> You&apos;ll Love</h2>
   <p className="lsub">Everything you need to manage your scripts and users automatically.</p>
   <div className="feat-grid">
-    <article><div className="feat-icon">🤖</div><h3>Discord Auth</h3><p>One click sign-in with Discord. No extra passwords, no API-key login, and your workspace role is assigned automatically.</p></article>
+    <article><div className="feat-icon">🤖</div><h3>Owner API Authentication</h3><p>Private owner access through a single long API key. No Discord OAuth or public account registration.</p></article>
     <article><div className="feat-icon">🔑</div><h3>Key Stocking</h3><p>Generate day-locked or lifetime license keys per project and hand them out on your own storefront or community.</p></article>
     <article><div className="feat-icon">📜</div><h3>Device Binding</h3><p>Every key is bound to a hardware fingerprint with configurable device limits, so shared keys stop working on their own.</p></article>
     <article><div className="feat-icon">🛑</div><h3>One Click Kill Switch</h3><p>Suspend or revoke a license anytime and it takes effect immediately for future executions.</p></article>
@@ -93,20 +93,20 @@ export default function Home(){return (
       <h3>Basic</h3><p className="price-sub">If you just started developing scripts, this plan is ideal for you.</p>
       <div className="price-line"><span className="price-num">$5</span><span className="price-per">/month</span></div>
       <ul><li>✓ 1 project folder</li><li>✓ Up to 2 scripts at once</li><li>✓ Up to 100 keys at once</li><li>✓ Device binding</li><li>✓ Execution logs</li><li className="off">× Webhook logs</li></ul>
-      <Link href="/api/auth/discord" className="btn outline wide">Get started</Link>
+      <Link href="/login" className="btn outline wide">Get started</Link>
     </div>
     <div className="price-card popular">
       <div className="pop-badge">Most Popular</div>
       <h3>Premium</h3><p className="price-sub">Best plan for most users. If your script hub is growing fast, this plan is recommended.</p>
       <div className="price-line"><span className="price-num">$10</span><span className="price-per">/month</span></div>
       <ul><li>✓ 3 project folders</li><li>✓ Up to 8 scripts at once</li><li>✓ Up to 500 keys at once</li><li>✓ Device binding</li><li>✓ Execution logs</li><li>✓ Priority support</li></ul>
-      <Link href="/api/auth/discord" className="btn gold wide">Get started</Link>
+      <Link href="/login" className="btn gold wide">Get started</Link>
     </div>
     <div className="price-card">
       <h3>Pro</h3><p className="price-sub">Everything in Premium with higher usage limits for established hubs.</p>
       <div className="price-line"><span className="price-num">$20</span><span className="price-per">/month</span></div>
       <ul><li>✓ 6 project folders</li><li>✓ Up to 18 scripts at once</li><li>✓ Up to 2,000 keys at once</li><li>✓ Device binding</li><li>✓ Execution logs</li><li>✓ Priority support</li></ul>
-      <Link href="/api/auth/discord" className="btn outline wide">Get started</Link>
+      <Link href="/login" className="btn outline wide">Get started</Link>
     </div>
     <div className="price-card">
       <h3>Enterprise</h3><p className="price-sub">For large hubs with specialized needs. Custom limits and features on request.</p>
@@ -120,7 +120,7 @@ export default function Home(){return (
 <section id="faq" className="lsec">
   <h2>Frequently asked <span className="gold">questions</span></h2>
   <div className="faq-list">
-    <div className="faq-item"><b>How do I sign in?</b><p>With Discord. One click, no password to remember, and your workspace is created on first sign-in.</p></div>
+    <div className="faq-item"><b>How do I sign in?</b><p>Use the private owner API key on the sign-in page. Access is restricted to the owner.</p></div>
     <div className="faq-item"><b>How do users run my script?</b><p>They run a single loadstring line pointing at your script&apos;s loader URL, optionally with their key attached. The loader checks the whitelist, binds the device and then runs the script.</p></div>
     <div className="faq-item"><b>What happens when a key runs out of devices?</b><p>The loader denies the execution and reports the reason. You can see every denial and its cause in your project logs.</p></div>
     <div className="faq-item"><b>Can I turn a key off instantly?</b><p>Yes. Suspending or revoking a license takes effect on the very next execution.</p></div>
