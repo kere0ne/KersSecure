@@ -1,11 +1,11 @@
-import re, secrets
+import re
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from luaparser import ast
 app = FastAPI(title='KersSecure Lua Obfuscation Engine', version='0.1.0')
 class BuildRequest(BaseModel):
     source: str = Field(min_length=1, max_length=500_000)
-    rename_locals: bool = True
+    rename_locals: bool = False
     protect_strings: bool = True
     minify: bool = True
 KEYWORDS = {'and','break','do','else','elseif','end','false','for','function','goto','if','in','local','nil','not','or','repeat','return','then','true','until','while'}
@@ -14,14 +14,9 @@ def lex(source): return TOKEN.findall(source)
 def build(source, rename, strings, minify):
     try: ast.parse(source)
     except Exception as exc: raise HTTPException(422, detail=f'Lua syntax validation failed: {str(exc)[:240]}')
-    tokens = lex(source)
-    replacements = {}
     if rename:
-        for i, token in enumerate(tokens[:-1]):
-            if token == 'local' and re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*', tokens[i+1]) and tokens[i+1] not in KEYWORDS:
-                replacements.setdefault(tokens[i+1], '_v' + secrets.token_hex(4))
-        for i, token in enumerate(tokens):
-            if token in replacements and (i == 0 or tokens[i-1] not in {'.', ':'}): tokens[i] = replacements[token]
+        raise HTTPException(501, detail='Scope-safe local renaming is not implemented yet; disable rename_locals for this build.')
+    tokens = lex(source)
     out = []
     for token in tokens:
         if token.startswith('--'): continue
