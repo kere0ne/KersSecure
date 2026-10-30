@@ -32,7 +32,7 @@ export async function getSessionUser() {
     const { payload } = await jwtVerify(token, secretKey(), { algorithms: ['HS256'] });
     if (payload.purpose !== 'kerssecure-session' || typeof payload.sub !== 'string') return null;
     const user = await (await __getPrisma()).user.findUnique({ where: { id: payload.sub } });
-    if (!user || user.suspended) return null;
+    if (!user || user.suspended || user.role !== 'OWNER') return null;
     return user;
   } catch {
     return null;
