@@ -1,43 +1,31 @@
-# Kers Secure — Script Control Plane
+# Kers Secure
 
-Kers Secure is a Next.js application for private Lua/Luau script hosting, project management and license validation.
+Kers Secure is a multi-service Lua/Luau script management and licensing platform. The repository contains the Next.js website, a PostgreSQL-backed service API, a Python Lua build service, a persistent Discord bot, and a standalone C# Lua validation/minification CLI.
 
-## Stack
-- Next.js App Router + TypeScript
-- Prisma database
-- Private owner API-key authentication with signed HTTP-only sessions
-- Private S3-compatible object storage (Cloudflare R2 supported)
-- Cloudflare Workers deployment via OpenNext
+## Current implementation status
 
-## Owner sign-in
-The dashboard uses **one private owner API key**. Discord OAuth and public account registration are not used.
+- Website: existing Next.js dashboard, project/script upload and license management screens.
+- Web authentication: Discord OAuth2 callback with state cookie and signed HTTP-only session. Configure OWNER_DISCORD_ID to assign the owner role.
+- Core API: FastAPI service with PostgreSQL models and authenticated internal key/script endpoints.
+- Python obfuscator: Lua parser-backed validation, source transformations and output re-validation. Luau syntax is not supported by the current luaparser dependency.
+- Discord bot: persistent discord.py service currently implements /generate, /keyinfo, /revoke and /reset-hwid.
+- C# engine: standalone .NET 8 CLI using MoonSharp parser validation and syntax-preserving minification. It is not a VM obfuscator.
 
-1. Generate a high-entropy key (use the owner key provided for this deployment, or generate a new 64-byte random hex value).
-2. Add it as the Cloudflare Worker secret named `OWNER_API_KEY`.
-3. Set `SESSION_SECRET` to a separate random value of at least 32 characters.
-4. Set `DATABASE_URL` and the required storage and license secrets.
-5. Open `/login` and paste the owner key. The server validates it and issues a signed, HTTP-only session cookie.
+The Python API currently has its own PostgreSQL schema and is not yet wired to the web application's Cloudflare D1 database. Do not assume website and bot data are synchronized in production until the database migration and integration phase is complete.
 
-Never put `OWNER_API_KEY` in source code, a `.env.example` file, client-side JavaScript, or a GitHub commit. If it is exposed, rotate it immediately.
+## Local services
 
-## Local setup
-1. Install Node.js 20+.
-2. Copy `.env.example` to `.env` and configure the required variables.
-3. Run `npm install`, `npx prisma generate`, `npx prisma db push`, then `npm run dev`.
+1. Install Docker and Docker Compose.
+2. Copy services/api/.env.example to services/api/.env and services/discord-bot/.env.example to services/discord-bot/.env.
+3. Set a strong POSTGRES_PASSWORD in your environment and set the same credentials in services/api/.env.
+4. Start the services with docker compose up --build.
+5. API health: http://localhost:8000/health
+6. Obfuscator health: http://localhost:8100/health
 
-## Cloudflare deployment
-GitHub is the source repository; Cloudflare Workers hosts the application. Configure runtime secrets in the Worker dashboard and GitHub Actions deployment credentials in repository Actions secrets. Runtime secrets and GitHub Actions secrets are separate stores.
+## Website environment
 
-## Required runtime secrets
-- `OWNER_API_KEY`
-- `SESSION_SECRET`
-- `LICENSE_HASH_SECRET`
-- `DATABASE_URL`
-- `S3_ENDPOINT`
-- `S3_BUCKET`
-- `S3_ACCESS_KEY_ID`
-- `S3_SECRET_ACCESS_KEY`
-- `S3_REGION`
+Copy .env.example to .env. Set DATABASE_URL, SESSION_SECRET, DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_REDIRECT_URI, OWNER_DISCORD_ID, LICENSE_HASH_SECRET and private R2/S3 credentials. The Discord redirect URI must exactly match the URL registered in the Discord Developer Portal.
 
-## Security
-The owner key is compared server-side using a SHA-256 digest comparison and is never returned to the browser. Script storage must remain private. Enable Cloudflare rate limiting on `/api/auth/key`. Rotate any key that has been shared or exposed. A client authorized to receive source can inspect it; no loader can guarantee that delivered code is impossible to extract.
+## Security notes
+
+Never commit secrets. Keep Discord bot tokens, internal service tokens, database credentials and storage credentials server-side. The current internal API token is a service-to-service credential, not a user login key. Configure rate limiting, audit retention, backups and TLS before public production use.
