@@ -16,8 +16,6 @@ jobs:
         with:
           node-version: 22
       - run: npm install
-      - name: Generate Prisma client
-        run: npx prisma generate
       - name: Build and deploy to Cloudflare Workers
         run: npm run deploy
         env:
