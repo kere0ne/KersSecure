@@ -1,49 +1,11 @@
 "use client";
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-
-type Data = { stats: { projects: number; scripts: number; licenses: number; active: number; execsToday: number }; series: Record<string, { authorized: number; denied: number }>; recent: { id: string; outcome: string; createdAt: string; script: string | null; key: string | null }[] };
-
-export default function AnalyticsPage() {
-  const [data, setData] = useState<Data | null>(null);
-  useEffect(() => { fetch('/api/me/overview').then(r => r.json()).then(setData); }, []);
-  if (!data) return <div className="shell"><main className="main"><section className="content"><div className="muted">Loading…</div></section></main></div>;
-  const days = Object.entries(data.series);
-  const max = Math.max(1, ...days.map(([, v]) => v.authorized + v.denied));
-  const totalAuth = days.reduce((a, [, v]) => a + v.authorized, 0); const totalDen = days.reduce((a, [, v]) => a + v.denied, 0);
-  return (
-    <div className="shell"><aside className="side">
-      <Link href="/" className="brand">KERS<span>SECURE</span></Link>
-      <nav className="nav"><Link href="/dashboard">Overview</Link><Link href="/projects">Projects</Link><Link href="/whitelist">Whitelist</Link><Link href="/analytics">Analytics</Link><Link href="/docs">Documentation</Link><Link href="/settings">Settings</Link></nav>
-    </aside><main className="main"><header className="top"><strong>Analytics</strong></header><section className="content">
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(160px,1fr))', gap: 12 }}>
-        <div className="card"><div className="muted" style={{ fontSize: 12 }}>Executions (24h)</div><div style={{ fontSize: 26, fontWeight: 600 }}>{data.stats.execsToday}</div></div>
-        <div className="card"><div className="muted" style={{ fontSize: 12 }}>Authorized (14d)</div><div style={{ fontSize: 26, fontWeight: 600 }}>{totalAuth}</div></div>
-        <div className="card"><div className="muted" style={{ fontSize: 12 }}>Denied (14d)</div><div style={{ fontSize: 26, fontWeight: 600 }}>{totalDen}</div></div>
-        <div className="card"><div className="muted" style={{ fontSize: 12 }}>Active licenses</div><div style={{ fontSize: 26, fontWeight: 600 }}>{data.stats.active}/{data.stats.licenses}</div></div>
-      </div>
-      <div className="card" style={{ marginTop: 16 }}>
-        <strong>Executions, last 14 days</strong>
-        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 160, marginTop: 14 }}>
-          {days.map(([day, v]) => (
-            <div key={day} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }} title={day + ': ' + v.authorized + ' authorized, ' + v.denied + ' denied'}>
-              <div style={{ width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', height: 130 }}>
-                <div style={{ height: (v.authorized / max) * 100 + '%', background: '#3b82f6', borderRadius: 3, minHeight: v.authorized ? 3 : 0 }} />
-                <div style={{ height: (v.denied / max) * 100 + '%', background: '#e07070', borderRadius: 3, minHeight: v.denied ? 3 : 0 }} />
-              </div>
-              <span className="muted" style={{ fontSize: 9 }}>{day.slice(5)}</span>
-            </div>
-          ))}
-        </div>
-        <div className="muted" style={{ fontSize: 11, marginTop: 8 }}><span style={{ color: '#3b82f6' }}>■</span> authorized <span style={{ color: '#e07070' }}>■</span> denied</div>
-      </div>
-      <div className="card" style={{ marginTop: 16 }}>
-        <strong>Recent authentication attempts</strong>
-        <div style={{ display: 'grid', gap: 6, marginTop: 10, fontSize: 12 }}>
-          {data.recent.map(r => <div key={r.id} className="row" style={{ justifyContent: 'space-between', borderBottom: '1px solid #1c2230', paddingBottom: 6 }}><span><span style={{ color: r.outcome === 'authorized' ? '#4ade80' : '#e07070' }}>{r.outcome}</span>{r.script ? ' · ' + r.script : ''}{r.key ? ' · ' + r.key + '…' : ''}</span><span className="muted">{new Date(r.createdAt).toLocaleString()}</span></div>)}
-          {data.recent.length === 0 && <div className="muted">No executions yet.</div>}
-        </div>
-      </div>
-    </section></main></div>
-  );
+import { useEffect, useState } from "react";
+import WorkspaceShell from "@/components/workspace-shell";
+type Data={stats:{projects:number;scripts:number;licenses:number;active:number;execsToday:number};series:Record<string,{authorized:number;denied:number}>;recent:{id:string;outcome:string;createdAt:string;script:string|null;key:string|null}[]};
+export default function AnalyticsPage(){
+ const [data,setData]=useState<Data|null>(null);const [error,setError]=useState("");
+ useEffect(()=>{fetch("/api/me/overview").then(r=>r.json()).then(d=>{if(d.error)setError(d.error);else setData(d);}).catch(()=>setError("Could not load analytics."));},[]);
+ if(!data)return <WorkspaceShell title="Analytics"><div className="ks-welcome"><div><div className="ks-overline">WORKSPACE / INSIGHTS</div><h1>Analytics</h1><p>Execution and authorization activity.</p></div></div><div className="ks-panel">{error||"Loading analytics…"}</div></WorkspaceShell>;
+ const days=Object.entries(data.series);const max=Math.max(1,...days.map(([,v])=>v.authorized+v.denied));const authorized=days.reduce((a,[,v])=>a+v.authorized,0);const denied=days.reduce((a,[,v])=>a+v.denied,0);
+ return <WorkspaceShell title="Analytics"><div className="ks-welcome"><div><div className="ks-overline">WORKSPACE / INSIGHTS</div><h1>Analytics</h1><p>Execution and authorization activity across your projects.</p></div></div><section className="ks-stat-grid"><article className="ks-stat-card"><div className="ks-stat-head"><span>Executions · 24h</span></div><strong>{data.stats.execsToday}</strong></article><article className="ks-stat-card"><div className="ks-stat-head"><span>Authorized · 14d</span></div><strong>{authorized}</strong></article><article className="ks-stat-card"><div className="ks-stat-head"><span>Denied · 14d</span></div><strong>{denied}</strong></article><article className="ks-stat-card"><div className="ks-stat-head"><span>Active keys</span></div><strong>{data.stats.active}/{data.stats.licenses}</strong></article></section><div className="ks-panel ks-analytics-panel"><div className="ks-panel-heading"><div><h2>Execution activity</h2><p>Daily authorized and denied requests · last 14 days</p></div></div><div className="ks-chart">{days.map(([day,v])=><div className="ks-chart-col" key={day} title={day+": "+v.authorized+" authorized, "+v.denied+" denied"}><div className="ks-chart-bars"><i style={{height:(v.authorized/max)*100+"%"}}/><b style={{height:(v.denied/max)*100+"%"}}/></div><span>{day.slice(5)}</span></div>)}</div><div className="ks-chart-legend"><span><i/> Authorized</span><span><i/> Denied</span></div></div><section className="ks-panel ks-recent-panel"><div className="ks-panel-heading"><div><h2>Recent authentication attempts</h2><p>Latest loader decisions recorded by the service</p></div></div>{data.recent.length?data.recent.map(r=><div className="ks-log-row" key={r.id}><span className={r.outcome==="authorized"?"ks-outcome-ok":"ks-outcome-denied"}>{r.outcome}</span><span>{r.script||"Unknown script"}{r.key?" · "+r.key+"…":""}</span><time>{new Date(r.createdAt).toLocaleString()}</time></div>):<div className="ks-empty"><p>No execution events recorded yet.</p></div>}</section></WorkspaceShell>;
 }
