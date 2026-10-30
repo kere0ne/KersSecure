@@ -20,7 +20,7 @@ def build(source, rename, strings, minify):
     out = []
     for token in tokens:
         if token.startswith('--'): continue
-        if strings and len(token) >= 2 and token[0] in {'\"', "'"} and token[-1] == token[0]:
+        if strings and len(token) >= 2 and token[0] in {'\"', "'"} and token[-1] == token[0] and chr(92) not in token[1:-1]:
             encoded = ','.join(str(b) for b in token[1:-1].encode('utf-8'))
             token = "(function()local t={" + encoded + "};local s='';for i=1,#t do s=s..string.char(t[i]) end;return s end)()"
         elif re.fullmatch(r'\d+', token) and int(token) > 1: token = f'({token}-1+1)'
