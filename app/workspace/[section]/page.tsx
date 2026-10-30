@@ -1,5 +1,6 @@
 import Link from "next/link";
 import WorkspaceShell from "@/components/workspace-shell";
+import LogsPanel from "./logs-panel";
 import { Construction, ArrowUpRight } from "lucide-react";
 
 const sections: Record<string,{title:string;description:string;status:string;next:string[]}> = {
@@ -13,5 +14,6 @@ const sections: Record<string,{title:string;description:string;status:string;nex
 };
 export default async function WorkspaceSection({params}:{params:Promise<{section:string}>}) {
  const {section}=await params; const item=sections[section] || {title:"Workspace",description:"Workspace tools.",status:"Unavailable",next:["This section is not available."]};
+ if(section==="logs") return <WorkspaceShell title="Logs"><div className="ks-welcome"><div><div className="ks-overline">WORKSPACE / SECURITY</div><h1>Activity logs</h1><p>Review loader authorization events across your projects.</p></div></div><LogsPanel/></WorkspaceShell>;
  return <WorkspaceShell title={item.title}><div className="ks-welcome"><div><div className="ks-overline">WORKSPACE / PLATFORM</div><h1>{item.title}</h1><p>{item.description}</p></div></div><section className="ks-panel ks-placeholder"><div className="ks-placeholder-icon"><Construction size={22}/></div><span className="ks-status-chip">{item.status}</span><h2>This feature isn't live yet</h2><p>Kers Secure will only show controls here when they're backed by a working service.</p><ul>{item.next.map(v=><li key={v}>{v}</li>)}</ul><Link href="/dashboard" className="ks-text-link">Back to dashboard <ArrowUpRight size={14}/></Link></section></WorkspaceShell>;
 }
