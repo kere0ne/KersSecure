@@ -1,89 +1,22 @@
 "use client";
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-
-type Lic = { id: string; keyPrefix: string; status: string; maxDevices: number; devices: string[]; robloxUserId: string | null; discordId: string | null; expiresAt: string | null; usedCount: number; execLimit: number | null; banned: boolean; note: string | null; createdAt: string; projectId: string };
-type Project = { id: string; name: string };
-
-export default function WhitelistPage() {
-  const [rows, setRows] = useState<Lic[]>([]); const [projects, setProjects] = useState<Project[]>([]);
-  const [q, setQ] = useState(''); const [status, setStatus] = useState(''); const [projectFilter, setProjectFilter] = useState('');
-  const [msg, setMsg] = useState(''); const [busy, setBusy] = useState(false);
-  const [form, setForm] = useState({ projectId: '', robloxUserId: '', maxDevices: 1, expiresInDays: '', count: 1, note: '' });
-  const [keysOut, setKeysOut] = useState<string[]>([]);
-  function load() { fetch('/api/licenses').then(r => r.json()).then(d => { if (d.licenses) { setRows(d.licenses); setProjects(d.projects); if (!form.projectId && d.projects[0]) setForm((f) => ({ ...f, projectId: d.projects[0].id })); } }); }
-  useEffect(load, []);
-  async function create() {
-    setBusy(true); setMsg(''); setKeysOut([]);
-    const r = await fetch('/api/licenses', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ projectId: form.projectId, robloxUserId: form.robloxUserId || undefined, maxDevices: Number(form.maxDevices) || 1, expiresInDays: form.expiresInDays ? Number(form.expiresInDays) : null, count: Math.max(1, Math.min(100, Number(form.count) || 1)), note: form.note || undefined }) });
-    const d = await r.json();
-    if (!r.ok) setMsg(d.error || 'Failed'); else { setKeysOut(d.keys.map((k: { key: string }) => k.key)); setMsg(d.keys.length + ' key(s) created. Copy them now, they are shown once.'); load(); }
-    setBusy(false);
-  }
-  async function act(id: string, action: string, extra: Record<string, unknown> = {}) {
-    const r = await fetch('/api/licenses/' + id, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action, ...extra }) });
-    if (!r.ok) { const d = await r.json(); setMsg(d.error || 'Failed'); } load();
-  }
-  async function del(id: string) { if (!confirm('Delete this license?')) return; await fetch('/api/licenses/' + id, { method: 'DELETE' }); load(); }
-  async function importCsv(file: File) {
-    const body = new FormData(); body.set('file', file);
-    const r = await fetch('/api/licenses/export', { method: 'POST', body });
-    const d = await r.json(); setMsg(r.ok ? 'Imported ' + d.imported + ', skipped ' + d.skipped : (d.error || 'Import failed')); load();
-  }
-  const filtered = rows.filter(l => (!status || l.status === status));
-  const fmtExp = (v: string | null) => (v ? new Date(v).toLocaleDateString() : 'permanent');
-  return (
-    <div className="shell"><aside className="side">
-      <Link href="/" className="brand">KERS<span>SECURE</span></Link>
-      <nav className="nav"><Link href="/dashboard">Overview</Link><Link href="/projects">Projects</Link><Link href="/whitelist">Whitelist</Link><Link href="/analytics">Analytics</Link><Link href="/docs">Documentation</Link><Link href="/settings">Settings</Link></nav>
-    </aside><main className="main"><header className="top"><strong>Whitelist manager</strong><div style={{ display: 'flex', gap: 8 }}>
-      <a className="btn" href="/api/licenses/export">Export CSV</a>
-      <label className="btn" style={{ cursor: 'pointer' }}>Import CSV<input type="file" accept=".csv,text/csv" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) importCsv(f); }} /></label>
-    </div></header><section className="content">
-      <div className="card">
-        <strong>New whitelist entries</strong>
-        <div style={{ display: 'grid', gap: 10, marginTop: 10, gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))' }}>
-          <select value={form.projectId} onChange={e => setForm({ ...form, projectId: e.target.value })}>{projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
-          <input placeholder="Roblox user ID (optional)" value={form.robloxUserId} onChange={e => setForm({ ...form, robloxUserId: e.target.value })} />
-          <input type="number" min={1} max={50} placeholder="Device limit" value={form.maxDevices} onChange={e => setForm({ ...form, maxDevices: Number(e.target.value) })} />
-          <input type="number" min={0} placeholder="Expires in days (blank = permanent)" value={form.expiresInDays} onChange={e => setForm({ ...form, expiresInDays: e.target.value })} />
-          <input type="number" min={1} max={100} placeholder="How many keys" value={form.count} onChange={e => setForm({ ...form, count: Number(e.target.value) })} />
-          <input placeholder="Note (optional)" value={form.note} onChange={e => setForm({ ...form, note: e.target.value })} />
-        </div>
-        <button className="btn primary" style={{ marginTop: 10 }} onClick={create} disabled={busy || !form.projectId}>{busy ? 'Creating…' : 'Generate keys'}</button>
-        {msg && <p className="muted" style={{ fontSize: 12, marginTop: 8 }}>{msg}</p>}
-        {keysOut.length > 0 && (
-          <pre style={{ marginTop: 8, background: '#0b0e14', border: '1px solid #232837', borderRadius: 8, padding: 10, fontSize: 12, overflow: 'auto', maxHeight: 180 }}>{keysOut.join('\n')}</pre>
-        )}
-        {keysOut.length > 0 && <button className="btn" style={{ marginTop: 8 }} onClick={() => navigator.clipboard.writeText(keysOut.join('\n'))}>Copy all keys</button>}
-      </div>
-      <div style={{ display: 'flex', gap: 10, marginTop: 20, flexWrap: 'wrap' }}>
-        <input placeholder="Search prefix, user ID, note…" value={q} onChange={e => setQ(e.target.value)} style={{ flex: 1, minWidth: 220 }} />
-        <select value={status} onChange={e => setStatus(e.target.value)}><option value="">All statuses</option><option value="ACTIVE">Active</option><option value="SUSPENDED">Suspended</option><option value="EXPIRED">Expired</option></select>
-      </div>
-      <div style={{ display: 'grid', gap: 8, marginTop: 12 }}>
-        {filtered.filter(l => (l.keyPrefix + ' ' + (l.robloxUserId || '') + ' ' + (l.note || '')).toLowerCase().includes(q.toLowerCase())).slice(0, 200).map(l => (
-          <div key={l.id} className="card">
-            <div className="row" style={{ justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
-              <div>
-                <strong style={{ fontFamily: 'ui-monospace, monospace', fontSize: 13 }}>{l.keyPrefix}…</strong>
-                <span className="muted" style={{ fontSize: 12, marginLeft: 8 }}>{l.status}{l.banned ? ' · BANNED' : ''} · {fmtExp(l.expiresAt)} · {l.devices.length}/{l.maxDevices} devices · {l.usedCount} uses{l.robloxUserId ? ' · user ' + l.robloxUserId : ''}</span>
-                {l.note && <div className="muted" style={{ fontSize: 11, marginTop: 3 }}>{l.note}</div>}
-              </div>
-              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                {l.status === 'ACTIVE' ? <button className="btn" onClick={() => act(l.id, 'suspend')}>Suspend</button> : <button className="btn" onClick={() => act(l.id, 'reactivate')}>Reactivate</button>}
-                <button className="btn" onClick={() => act(l.id, 'extend', { days: 30 })}>+30d</button>
-                <button className="btn" onClick={() => act(l.id, 'permanent')}>Perm</button>
-                <button className="btn" onClick={() => act(l.id, 'resetHwid')}>Reset HWID</button>
-                <button className="btn" onClick={() => act(l.id, 'ban', { banned: !l.banned })}>{l.banned ? 'Unban' : 'Ban'}</button>
-                <button className="btn" onClick={() => { const v = prompt('Roblox user ID to bind'); if (v !== null) act(l.id, 'bind', { robloxUserId: v }); }}>Bind user</button>
-                <button className="btn" onClick={() => del(l.id)} style={{ color: '#e07070' }}>Delete</button>
-              </div>
-            </div>
-          </div>
-        ))}
-        {filtered.length === 0 && <div className="card muted">No whitelist entries yet. Generate your first keys above.</div>}
-      </div>
-    </section></main></div>
-  );
+import { useEffect, useMemo, useState } from "react";
+import WorkspaceShell from "@/components/workspace-shell";
+import { Download, KeyRound, Plus, Search, Upload, Copy, RotateCcw, Ban, Trash2 } from "lucide-react";
+type Lic={id:string;keyPrefix:string;status:string;maxDevices:number;devices:string[];robloxUserId:string|null;discordId:string|null;expiresAt:string|null;usedCount:number;execLimit:number|null;banned:boolean;note:string|null;createdAt:string;projectId:string};
+type Project={id:string;name:string};
+export default function WhitelistPage(){
+ const [rows,setRows]=useState<Lic[]>([]);const [projects,setProjects]=useState<Project[]>([]);const [q,setQ]=useState("");const [status,setStatus]=useState("");const [msg,setMsg]=useState("");const [busy,setBusy]=useState(false);const [showCreate,setShowCreate]=useState(false);
+ const [form,setForm]=useState({projectId:"",robloxUserId:"",maxDevices:1,expiresInDays:"",count:1,note:""});const [keysOut,setKeysOut]=useState<string[]>([]);
+ function load(){fetch("/api/licenses").then(r=>r.json()).then(d=>{if(d.licenses){setRows(d.licenses);setProjects(d.projects);if(!form.projectId&&d.projects[0])setForm(f=>({...f,projectId:d.projects[0].id}));}});}
+ useEffect(()=>{load();},[]);
+ async function create(){setBusy(true);setMsg("");setKeysOut([]);try{const r=await fetch("/api/licenses",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({projectId:form.projectId,robloxUserId:form.robloxUserId||undefined,maxDevices:Number(form.maxDevices)||1,expiresInDays:form.expiresInDays?Number(form.expiresInDays):null,count:Math.max(1,Math.min(100,Number(form.count)||1)),note:form.note||undefined})});const d=await r.json();if(!r.ok)throw new Error(d.error||"Key generation failed");setKeysOut(d.keys.map((k:{key:string})=>k.key));setMsg(d.keys.length+" keys generated. Copy them now; they are shown only once.");load();}catch(e){setMsg(e instanceof Error?e.message:"Request failed");}finally{setBusy(false);}}
+ async function act(id:string,action:string,extra:Record<string,unknown>={}){const r=await fetch("/api/licenses/"+id,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({action,...extra})});if(!r.ok){const d=await r.json();setMsg(d.error||"Action failed");}load();}
+ async function del(id:string){if(!confirm("Permanently delete this key?"))return;await fetch("/api/licenses/"+id,{method:"DELETE"});load();}
+ async function importCsv(file:File){const body=new FormData();body.set("file",file);const r=await fetch("/api/licenses/export",{method:"POST",body});const d=await r.json();setMsg(r.ok?"Imported "+d.imported+", skipped "+d.skipped:(d.error||"Import failed"));load();}
+ const filtered=useMemo(()=>rows.filter(l=>(!status||l.status===status)&&(l.keyPrefix+" "+(l.robloxUserId||"")+" "+(l.note||"")).toLowerCase().includes(q.toLowerCase())),[rows,status,q]);
+ return <WorkspaceShell title="Keys"><div className="ks-welcome"><div><div className="ks-overline">ACCESS CONTROL / LICENSES</div><h1>Key management</h1><p>Generate, monitor and manage access keys across your projects.</p></div><button className="ks-primary-btn" onClick={()=>setShowCreate(v=>!v)}><Plus size={15}/> Generate keys</button></div>
+ <section className="ks-key-toolbar"><div className="ks-key-search"><Search size={15}/><input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search key prefix, Roblox ID or note…"/></div><select value={status} onChange={e=>setStatus(e.target.value)}><option value="">All statuses</option><option value="ACTIVE">Active</option><option value="SUSPENDED">Suspended</option><option value="EXPIRED">Expired</option></select><a className="ks-secondary-btn" href="/api/licenses/export"><Download size={14}/> Export CSV</a><label className="ks-secondary-btn"><Upload size={14}/> Import<input type="file" accept=".csv,text/csv" hidden onChange={e=>{const f=e.target.files?.[0];if(f)importCsv(f);}}/></label></section>
+ {showCreate&&<section className="ks-panel ks-key-create"><div className="ks-panel-heading"><div><h2>Generate license keys</h2><p>Keys are displayed once after creation. Store them securely.</p></div><button className="ks-icon-btn" onClick={()=>setShowCreate(false)}>×</button></div><div className="ks-key-form"><label>Project<select value={form.projectId} onChange={e=>setForm({...form,projectId:e.target.value})}>{projects.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select></label><label>Roblox user ID<input value={form.robloxUserId} onChange={e=>setForm({...form,robloxUserId:e.target.value})} placeholder="Optional"/></label><label>HWID limit<input type="number" min={1} max={50} value={form.maxDevices} onChange={e=>setForm({...form,maxDevices:Number(e.target.value)})}/></label><label>Expiry (days)<input type="number" min={0} value={form.expiresInDays} onChange={e=>setForm({...form,expiresInDays:e.target.value})} placeholder="Blank = permanent"/></label><label>Quantity<input type="number" min={1} max={100} value={form.count} onChange={e=>setForm({...form,count:Number(e.target.value)})}/></label><label>Note<input value={form.note} onChange={e=>setForm({...form,note:e.target.value})} placeholder="Optional note"/></label></div><button className="ks-primary-btn" disabled={busy||!form.projectId} onClick={create}>{busy?"Generating…":"Generate keys"}</button>{msg&&<p className="ks-key-message">{msg}</p>}{keysOut.length>0&&<div className="ks-generated-keys"><pre>{keysOut.join("\n")}</pre><button className="ks-secondary-btn" onClick={()=>navigator.clipboard.writeText(keysOut.join("\n"))}><Copy size={13}/> Copy all keys</button></div>}</section>}
+ <section className="ks-panel ks-key-table"><div className="ks-panel-heading"><div><h2>Issued keys</h2><p>{filtered.length} matching key{filtered.length===1?"":"s"}</p></div></div><div className="ks-key-table-head"><span>KEY / OWNER</span><span>STATUS</span><span>DEVICES</span><span>EXPIRES</span><span>USAGE</span><span>ACTIONS</span></div>{filtered.map(l=><div className="ks-key-row" key={l.id}><div className="ks-key-identity"><strong>{l.keyPrefix}••••••</strong><small>{l.robloxUserId?"Roblox ID "+l.robloxUserId:"Unassigned"}{l.note?" · "+l.note:""}</small></div><span className={"ks-key-status "+(l.status==="ACTIVE"?"is-active":"")}>{l.banned?"BANNED":l.status}</span><span className="ks-key-cell">{l.devices.length} / {l.maxDevices}</span><span className="ks-key-cell">{l.expiresAt?new Date(l.expiresAt).toLocaleDateString():"Never"}</span><span className="ks-key-cell">{l.usedCount}{l.execLimit?"/"+l.execLimit:""} uses</span><div className="ks-key-actions">{l.status==="ACTIVE"?<button title="Suspend" onClick={()=>act(l.id,"suspend")}><Ban size={13}/></button>:<button title="Reactivate" onClick={()=>act(l.id,"reactivate")}><KeyRound size={13}/></button>}<button title="Reset HWID" onClick={()=>act(l.id,"resetHwid")}><RotateCcw size={13}/></button><button title={l.banned?"Unban":"Ban"} onClick={()=>act(l.id,"ban",{banned:!l.banned})}><ShieldBanIcon/></button><button title="Delete" onClick={()=>del(l.id)}><Trash2 size={13}/></button></div></div>)}{filtered.length===0&&<div className="ks-empty"><div className="ks-empty-icon"><KeyRound size={19}/></div><strong>No keys found</strong><p>Adjust your filters or generate your first key.</p></div>}</section>{msg&&!showCreate&&<p className="ks-key-message">{msg}</p>}</WorkspaceShell>;
 }
+function ShieldBanIcon(){return <Ban size={13}/>}
