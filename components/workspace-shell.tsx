@@ -7,8 +7,9 @@ import {
   KeyRound, LayoutDashboard, LifeBuoy, Logs, Moon, Plug, Settings2, ShieldCheck,
   Sun, Users, Zap, Menu, X
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
-const primary = [
+const primary: { label: string; href: string; icon: LucideIcon }[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Scripts", href: "/projects", icon: FileCode2 },
   { label: "Keys", href: "/whitelist", icon: KeyRound },
@@ -17,7 +18,7 @@ const primary = [
   { label: "Logs", href: "/workspace/logs", icon: Logs },
   { label: "Analytics", href: "/analytics", icon: BarChart3 },
 ];
-const platform = [
+const platform: { label: string; href: string; icon: LucideIcon }[] = [
   { label: "Obfuscator", href: "/workspace/obfuscator", icon: ShieldCheck },
   { label: "Integrations", href: "/workspace/integrations", icon: Plug },
   { label: "Discord Bot", href: "/workspace/discord-bot", icon: Bot },
