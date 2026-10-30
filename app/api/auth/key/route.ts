@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createHash } from 'node:crypto';
+import { createHash, timingSafeEqual } from 'node:crypto';
 import { getPrisma } from '@/lib/db';
 import { createSession } from '@/lib/auth';
 
@@ -23,7 +23,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid request body.' }, { status: 400 });
   }
 
-  if (supplied.length < 80 || supplied.length > 512 || !digest(supplied).equals(digest(expected))) {
+  if (supplied.length < 80 || supplied.length > 512 || !timingSafeEqual(digest(supplied), digest(expected))) {
     return NextResponse.json({ error: 'Invalid owner key.' }, { status: 401, headers: { 'Cache-Control': 'no-store' } });
   }
 
