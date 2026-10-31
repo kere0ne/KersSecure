@@ -1,0 +1,374 @@
+local env = getfenv and getfenv() or _ENV
+local select, newproxy, getmetatable, setmetatable, args, unpack = select, newproxy, getmetatable, setmetatable, {...}, unpack or table.concat
+
+local hash_cache = {}
+local registry = setmetatable({}, {__mode = "k"})
+local protection_state = {}
+local integrity_hashes = {}
+local check_counters = {}
+
+local function xor_hash(a, b)
+    local result = 0
+    local max_len = math.max(#tostring(a), #tostring(b))
+    for i = 1, max_len do
+        local ba = string.byte(tostring(a), i) or 0
+        local bb = string.byte(tostring(b), i) or 0
+        result = result + (ba ~ bb) * (2 ^ ((i - 1) % 24))
+    end
+    return result
+end
+
+local function compute_integrity_hash(target)
+    if hash_cache[target] then return hash_cache[target] end
+    local h = 0
+    if type(target) == "table" then
+        for k, v in pairs(target) do
+            h = h ~ xor_hash(k, v)
+            h = (h * 2654435761) % 4294967296
+        end
+        local mt = getmetatable(target)
+        if mt then
+            h = h ~ compute_integrity_hash(mt)
+        end
+    elseif type(target) == "function" then
+        local info = debug and debug.getinfo(target) or nil
+        if info then
+            h = xor_hash(info.source or "", info.linedefined or 0)
+        end
+    else
+        h = xor_hash(tostring(target), type(target))
+    end
+    hash_cache[target] = h
+    return h
+end
+
+do
+    local proxy_mt = {}
+    proxy_mt.__index = function(t, k)
+        local real = rawget(t, "__real_table")
+        if real then
+            local val = rawget(real, k)
+            if val ~= nil then return val end
+            local mt = getmetatable(real)
+            if mt and mt.__index then
+                if type(mt.__index) == "table" then
+                    return mt.__index[k]
+                else
+                    return mt.__index(real, k)
+                end
+            end
+        end
+        return nil
+    end
+    proxy_mt.__newindex = function(t, k, v)
+        local real = rawget(t, "__real_table")
+        if real then
+            rawset(real, k, v)
+        end
+    end
+    proxy_mt.__metatable = "Cannot access metatable of this object"
+
+    function protection_state.create_proxy(real_table)
+        if registry[real_table] then return registry[real_table] end
+        local proxy = setmetatable({__real_table = real_table}, proxy_mt)
+        registry[real_table] = proxy
+        return proxy
+    end
+end
+
+local original_setmetatable = setmetatable
+local original_getmetatable = getmetatable
+
+do
+    local tracked_tables = setmetatable({}, {__mode = "k"})
+
+    setmetatable = function(tbl, mt)
+        if type(tbl) ~= "table" then
+            return original_setmetatable(tbl, mt)
+        end
+        local existing_mt = original_getmetatable(tbl)
+        if existing_mt then
+            local existing_hash = compute_integrity_hash(existing_mt)
+            integrity_hashes[tbl] = existing_hash
+        end
+        if mt then
+            if not mt.__metatable then
+                mt.__metatable = "Cannot access metatable of this object"
+            end
+            tracked_tables[tbl] = {
+                original_mt = mt,
+                hash = compute_integrity_hash(mt),
+                locked = true
+            }
+        end
+        local result = original_setmetatable(tbl, mt)
+        return result
+    end
+
+    getmetatable = function(tbl)
+        local mt = original_getmetatable(tbl)
+        if mt and mt.__metatable then
+            return {__metatable = mt.__metatable}
+        end
+        return mt
+    end
+
+    function protection_state.verify_metatable_integrity(tbl)
+        local tracked = tracked_tables[tbl]
+        if not tracked then return true end
+        local current_mt = original_getmetatable(tbl)
+        if not current_mt then
+            error("Tamper Detected!", 2)
+            return false
+        end
+        local current_hash = compute_integrity_hash(current_mt)
+        if current_hash ~= tracked.hash then
+            error("Tamper Detected!", 2)
+            return false
+        end
+        return true
+    end
+end
+
+do
+    local function wrap_function(original, name)
+        if type(original) ~= "function" then return original end
+        local expected_hash = compute_integrity_hash(original)
+        local wrapper
+        wrapper = function(...)
+            local current_hash = compute_integrity_hash(original)
+            if current_hash ~= expected_hash then
+                error("Tamper Detected!", 2)
+            end
+            if debug then
+                local info = debug.getinfo(2, "f")
+                if info and info.func ~= wrapper and info.func ~= original then
+                    local caller_hash = compute_integrity_hash(info.func)
+                    if not protection_state.allowed_callers[caller_hash] then
+                        error("Tamper Detected!", 2)
+                    end
+                end
+            end
+            return original(...)
+        end
+        protection_state.create_proxy(wrapper)
+        return wrapper
+    end
+
+    protection_state.allowed_callers = {}
+    protection_state.wrap_function = wrap_function
+end
+
+do
+    local env_snapshot = {}
+    if env then
+        for k, v in pairs(env) do
+            if type(v) == "function" then
+                env_snapshot[k] = compute_integrity_hash(v)
+            elseif type(v) == "table" then
+                env_snapshot[k] = compute_integrity_hash(v)
+            end
+        end
+    end
+
+    function protection_state.verify_environment()
+        if not env then return true end
+        for k, original_hash in pairs(env_snapshot) do
+            local current = env[k]
+            if current == nil then
+                error("Tamper Detected!", 2)
+                return false
+            end
+            local current_hash = compute_integrity_hash(current)
+            if current_hash ~= original_hash then
+                error("Tamper Detected!", 2)
+                return false
+            end
+        end
+        for k, v in pairs(env) do
+            if env_snapshot[k] == nil and k ~= "__anti_tamper_log" then
+                if type(v) == "function" or type(v) == "table" then
+                    error("Tamper Detected!", 2)
+                    return false
+                end
+            end
+        end
+        return true
+    end
+end
+
+do
+    local global_refs = {}
+    local g_mt = getmetatable(_G) or {}
+
+    local g_index = g_mt.__index
+    g_mt.__index = function(t, k)
+        global_refs[k] = (global_refs[k] or 0) + 1
+        if g_index then
+            return g_index(t, k)
+        end
+        return rawget(t, k)
+    end
+
+    local g_newindex = g_mt.__newindex
+    g_mt.__newindex = function(t, k, v)
+        local old_val = rawget(t, k)
+        if old_val ~= nil then
+            local old_hash = compute_integrity_hash(old_val)
+            local new_hash = compute_integrity_hash(v)
+            if old_hash ~= new_hash then
+                global_refs["__modified_" .. k] = true
+            end
+        else
+            global_refs["__added_" .. k] = true
+        end
+        if g_newindex then
+            return g_newindex(t, k, v)
+        end
+        rawset(t, k, v)
+    end
+
+    g_mt.__metatable = "Cannot access metatable of this object"
+    setmetatable(_G, g_mt)
+
+    function protection_state.verify_globals()
+        for k, v in pairs(global_refs) do
+            if k:find("^__modified_") or k:find("^__added_") then
+                error("Tamper Detected!", 2)
+                return false
+            end
+        end
+        return true
+    end
+end
+
+do
+    function protection_state.verify_source_integrity()
+        local info = debug and debug.getinfo(1, "S")
+        if not info or not info.source then return true end
+        local source = info.source
+        if type(source) == "string" and source:find("@") then
+            local expected_patterns = {
+                ["function"] = true,
+                ["local"] = true,
+                ["end"] = true,
+            }
+            for pattern, _ in pairs(expected_patterns) do
+                if not source:find(pattern) then
+                    error("Tamper Detected!", 2)
+                    return false
+                end
+            end
+        end
+        return true
+    end
+end
+
+do
+    local stored_hashes = {}
+
+    function protection_state.store_hash(key, value)
+        stored_hashes[key] = compute_integrity_hash(value)
+    end
+
+    function protection_state.verify_stored_hash(key, value)
+        local expected = stored_hashes[key]
+        if not expected then return true end
+        local current = compute_integrity_hash(value)
+        if current ~= expected then
+            error("Tamper Detected!", 2)
+            return false
+        end
+        return true
+    end
+end
+
+do
+    local timing_seeds = {}
+    math.randomseed(os and os.time() or 0)
+
+    function protection_state.timing_check()
+        local seed = math.random(1, 10000)
+        if not timing_seeds[seed] then
+            timing_seeds[seed] = {
+                start = os and os.clock() or 0,
+                expected = math.floor(seed * 0.001 * 1000)
+            }
+        end
+        local record = timing_seeds[seed]
+        local elapsed = os and os.clock() or 0
+        local diff = math.floor((elapsed - record.start) * 1000000)
+        local threshold = math.floor(seed * 0.001 * 1000)
+        if diff < -threshold or diff > threshold * 100 then
+            error("Tamper Detected!", 2)
+            return false
+        end
+        return true
+    end
+end
+
+do
+    local co_wrapper = nil
+    co_wrapper = function(fn)
+        local co = coroutine.create(function(...)
+            local result = {pcall(fn, ...)}
+            if not result[1] then
+                error("Tamper Detected!", 2)
+            end
+            return unpack(result, 2)
+        end)
+        local success, result = coroutine.resume(co)
+        if not success then
+            error("Tamper Detected!", 2)
+        end
+        return result
+    end
+    protection_state.coroutine_wrapper = co_wrapper
+end
+
+local function run_all_checks()
+    local ok, err = pcall(function()
+        protection_state.verify_environment()
+    end)
+    if not ok then error("Tamper Detected!", 2) end
+
+    ok, err = pcall(function()
+        protection_state.verify_globals()
+    end)
+    if not ok then error("Tamper Detected!", 2) end
+
+    ok, err = pcall(function()
+        protection_state.verify_metatable_integrity(_G)
+    end)
+    if not ok then error("Tamper Detected!", 2) end
+
+    ok, err = pcall(function()
+        protection_state.verify_source_integrity()
+    end)
+    if not ok then error("Tamper Detected!", 2) end
+
+    ok, err = pcall(function()
+        protection_state.timing_check()
+    end)
+    if not ok then error("Tamper Detected!", 2) end
+
+    ok, err = pcall(function()
+        local test_fn = function() end
+        local h1 = compute_integrity_hash(test_fn)
+        local h2 = compute_integrity_hash(test_fn)
+        if h1 ~= h2 then
+            error("Tamper Detected!", 2)
+        end
+    end)
+    if not ok then error("Tamper Detected!", 2) end
+
+    ok, err = pcall(function()
+        local test_val = math.floor(math.random() * 1000)
+        local h = compute_integrity_hash(test_val)
+        protection_state.store_hash("random_check", test_val)
+        protection_state.verify_stored_hash("random_check", test_val)
+    end)
+    if not ok then error("Tamper Detected!", 2) end
+end
+
+return run_all_checks()
