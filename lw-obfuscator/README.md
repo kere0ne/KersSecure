@@ -1,9 +1,7 @@
-# LW Obfuscator website
+# LW Obfuscator
 
-The LW Obfuscator redesign uses the open-source [Prometheus Lua Obfuscator](https://github.com/prometheus-lua/Prometheus), pinned to upstream commit `0d3e287c2fd9ef927e210268ea0a8bb1e7a4d581`.
+Rebranded Prometheus-powered Lua/Luau obfuscator with optional experimental anti-tamper guard. Overlay includes the UI, Vite base configuration and browser worker compatibility patch. It does not execute the uploaded anti-tamper script directly because its bitwise syntax and invasive global changes are incompatible with standard Lua 5.1/Luau. The original upload is included separately in the downloadable project archive.
 
-This overlay updates branding and adds an optional **LW Anti-Tamper (experimental)** toggle. Its compatible guard checks selected global function references at startup. This is not cryptographic integrity protection. The uploaded anti-tamper source is not executed directly because it uses incompatible syntax and invasive global/metatable changes. The original upload is available separately in the project download archive.
+Extract this overlay into upstream Prometheus commit `0d3e287c2fd9ef927e210268ea0a8bb1e7a4d581`, then `cd web && npm install && npm run build`. Retain upstream licensing.
 
-To build, clone Prometheus at the pinned commit, extract `ui-overlay.tar.gz` into its root, then run `cd web && npm install && npm run build`. The Prometheus engine and licensing are preserved.
-
-Overlay SHA-256: `1af2c43fb10b1f27694edff2fafb3ebfa0a2d2826f1c18ba13963e4f910e549f`.
+SHA-256: `2f34af521c37d99f6b71d00dc3f660d7edbc67e3783fcb1074633192d005d59f`.
