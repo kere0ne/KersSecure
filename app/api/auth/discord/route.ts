@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { randomBytes } from 'node:crypto';
 export const runtime = 'nodejs';
 const STATE_COOKIE = 'kerssecure_oauth_state';
+import { issueState } from '@/lib/oauth-state';
 function redirectUri(origin: string) {
   const configured = process.env.DISCORD_REDIRECT_URI?.trim();
   if (configured) return configured;
@@ -12,7 +12,7 @@ export async function GET(request: Request) {
   const clientId = process.env.DISCORD_CLIENT_ID?.trim();
   if (!clientId) return NextResponse.json({ error: 'Discord OAuth is not configured: DISCORD_CLIENT_ID is missing.' }, { status: 503 });
   try {
-    const state = randomBytes(32).toString('hex');
+    const state = issueState();
     const authorize = new URL('https://discord.com/oauth2/authorize');
     authorize.searchParams.set('client_id', clientId);
     authorize.searchParams.set('response_type', 'code');

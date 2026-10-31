@@ -4,6 +4,7 @@ import { getPrisma } from '@/lib/db';
 import { createSession } from '@/lib/auth';
 export const runtime = 'nodejs';
 const STATE_COOKIE = 'kerssecure_oauth_state';
+import { verifyState } from '@/lib/oauth-state';
 type DiscordProfile = { id: string; username: string; global_name?: string | null; avatar?: string | null; email?: string | null };
 function redirectUri(origin: string) {
   const configured = process.env.DISCORD_REDIRECT_URI?.trim();
@@ -23,7 +24,7 @@ export async function GET(request: Request) {
   const code = url.searchParams.get('code');
   const state = url.searchParams.get('state');
   const stateCookie = (await cookies()).get(STATE_COOKIE)?.value;
-  if (!code || !state || !stateCookie || state !== stateCookie) return fail('OAuth state validation failed. Please try again.');
+  if (!code || !state || !((stateCookie && state === stateCookie) || verifyState(state))) return fail('OAuth state validation failed. Please try again.');
   const clientId = process.env.DISCORD_CLIENT_ID?.trim();
   const clientSecret = process.env.DISCORD_CLIENT_SECRET?.trim();
   if (!clientId || !clientSecret) return fail('Discord OAuth credentials are not configured.', 503);
